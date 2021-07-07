@@ -44,7 +44,7 @@ type (
 		System  *core.System     `json:"system"`
 	}
 
-	// BuildManager encapsulets complex build operations and provides
+	// BuildManager encapsulates complex build operations and provides
 	// a simplified interface for build runners.
 	BuildManager interface {
 		// Request requests the next available build stage for execution.
@@ -60,13 +60,13 @@ type (
 		Details(ctx context.Context, stage int64) (*Context, error)
 
 		// Before signals the build step is about to start.
-		Before(ctxt context.Context, step *core.Step) error
+		Before(ctx context.Context, step *core.Step) error
 
 		// After signals the build step is complete.
 		After(ctx context.Context, step *core.Step) error
 
 		// Before signals the build stage is about to start.
-		BeforeAll(ctxt context.Context, stage *core.Stage) error
+		BeforeAll(ctx context.Context, stage *core.Stage) error
 
 		// After signals the build stage is complete.
 		AfterAll(ctx context.Context, stage *core.Stage) error
@@ -84,7 +84,7 @@ type (
 		UploadBytes(ctx context.Context, step int64, b []byte) error
 	}
 
-	// Request provildes filters when requesting a pending
+	// Request provides filters when requesting a pending
 	// build from the queue. This allows an agent, for example,
 	// to request a build that matches its architecture and kernel.
 	Request struct {
@@ -437,6 +437,7 @@ func (m *Manager) AfterAll(ctx context.Context, stage *core.Stage) error {
 		Stages:    m.Stages,
 		Status:    m.Status,
 		Users:     m.Users,
+		Webhook:   m.Webhook,
 	}
 	return t.do(ctx, stage)
 }
@@ -472,21 +473,33 @@ func (m *Manager) Netrc(ctx context.Context, id int64) (*core.Netrc, error) {
 // Watch watches for build cancellation requests.
 func (m *Manager) Watch(ctx context.Context, id int64) (bool, error) {
 	ok, err := m.Scheduler.Cancelled(ctx, id)
+	// we expect a context cancel error here which
+	// indicates a polling timeout. The subscribing
+	// client should look for the context cancel error
+	// and resume polling.
 	if err != nil {
 		return ok, err
 	}
 
-	// if a not found error is returned we should check
-	// the database to see if the stage is complete. If
+	// // TODO (bradrydzewski) we should be able to return
+	// // immediately if Cancelled returns true. This requires
+	// // some more testing but would avoid the extra database
+	// // call.
+	// if ok {
+	// 	return ok, err
+	// }
+
+	// if no error is returned we should check
+	// the database to see if the build is complete. If
 	// complete, return true.
-	stage, err := m.Stages.Find(ctx, id)
+	build, err := m.Builds.Find(ctx, id)
 	if err != nil {
 		logger := logrus.WithError(err)
-		logger = logger.WithField("step-id", id)
-		logger.Warnln("manager: cannot find stage")
+		logger = logger.WithField("build-id", id)
+		logger.Warnln("manager: cannot find build")
 		return ok, err
 	}
-	return stage.IsDone(), nil
+	return build.IsDone(), nil
 }
 
 // Write writes a line to the build logs.

@@ -16,6 +16,7 @@ package dbtest
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/drone/drone/store/shared/db"
 
@@ -30,14 +31,17 @@ import (
 // Connect opens a new test database connection.
 func Connect() (*db.DB, error) {
 	var (
-		driver = "sqlite3"
-		config = ":memory:?_foreign_keys=1"
+		driver         = "sqlite3"
+		config         = ":memory:?_foreign_keys=1"
+		maxConnections = 0
 	)
 	if os.Getenv("DRONE_DATABASE_DRIVER") != "" {
 		driver = os.Getenv("DRONE_DATABASE_DRIVER")
 		config = os.Getenv("DRONE_DATABASE_DATASOURCE")
+		maxConnectionsString := os.Getenv("DRONE_DATABASE_MAX_CONNECTIONS")
+		maxConnections, _ = strconv.Atoi(maxConnectionsString)
 	}
-	return db.Connect(driver, config)
+	return db.Connect(driver, config, maxConnections)
 }
 
 // Reset resets the database state.
@@ -47,6 +51,7 @@ func Reset(d *db.DB) {
 		tx.Exec("DELETE FROM logs")
 		tx.Exec("DELETE FROM steps")
 		tx.Exec("DELETE FROM stages")
+		tx.Exec("DELETE FROM latest")
 		tx.Exec("DELETE FROM builds")
 		tx.Exec("DELETE FROM perms")
 		tx.Exec("DELETE FROM repos")

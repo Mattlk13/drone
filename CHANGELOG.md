@@ -4,6 +4,148 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## [2.0.4]
+### Fixed
+- DRON-97 remove use of request animation frame to prevent high CPU on tab refocus events.
+
+## [2.0.3]
+### Fixed
+- DONE-91 handle extra slashes in url. [#3009](https://github.com/drone/drone/pull/3099).
+
+## [2.0.2]
+### Added
+- Merge remote-tracking branch 'origin/master'
+- prevent repository list short circuit in UI
+- remove deprecated steps from building file [#3097](https://github.com/drone/drone/pull/3097)
+- adding depends_on, image and detached fields to step [#3072](https://github.com/drone/drone/pull/3072)
+- Add ctx.build.debug boolean [#3082](https://github.com/drone/drone/pull/3082)
+- Bump github.com/google/go-jsonnet to v0.17.0 [#3084](https://github.com/drone/drone/pull/3084)
+- bump go-scm v1.15.1 [#3096](https://github.com/drone/drone/pull/3096)
+- bitbucket server build issue [#3092](https://github.com/drone/drone/pull/3092)
+- update scm version [#3091](https://github.com/drone/drone/pull/3091)  
+- Limit graceful shutdown duration [#3093](https://github.com/drone/drone/pull/3093)  
+- bump user interface  
+- bump ui version
+- ignore skip directive for promote and rollback events
+- new feature: maximum open DB connections is configurable[#3089](https://github.com/drone/drone/pull/3089) 
+- jsonnet additional parameters [#3087](https://github.com/drone/drone/pull/3087)
+- hide login button if user already authenticated  
+- new feature: configuration templates [#3081](https://github.com/drone/drone/pull/3081)
+
+### Fixed
+- various typos [#3088](https://github.com/drone/drone/pull/3088)
+- handle error properly if template doesn't exist [#3095](https://github.com/drone/drone/pull/3093)
+- oss build issue [#3086](https://github.com/drone/drone/pull/3086)
+- graceful shutdown [#3083](https://github.com/drone/drone/pull/3083)
+
+## [2.0.1]
+### Added
+- support for configuring the internal yaml cache size.
+
+## [2.0.0]
+### Added
+- feature flags for mixed-mode database encryption.
+
+### Changed
+- user-interface re-design
+
+### Breaking
+- removed deprecated kubernetes integration in favor of official kubernetes runner.
+- removed deprecated nomad integration in favor of official nomad runner.
+
+## [1.10.1]
+### Added
+- support for repository-level concurrency limits.
+- support for gitlab and github internal visibility on initial sync.
+
+### Fixed
+- create machine user with a custom API token.
+
+## [1.10.0]
+### Added
+- support for starlark scripts in core.
+- support for executing pipelines in debug mode.
+
+## [1.9.2]
+### Added
+- update go-scm dependency to fix
+
+## [1.9.1]
+### Added
+- support for increasing the http request timeout for extensions. [#2998](https://github.com/drone/drone/pull/2998).
+- support for skipping a pipeline if the validation extension returns an ErrSkip.
+- support for blocking a pipeline if the validation extension returns an ErrBlock.
+
+### Fixed
+- rollback endpoint should be available to users with write permission.
+- retrying a build should re-use custom build parameters from parent build.
+
+## [1.9.0] - 2020-07-12
+### Added
+- ui support for deployment list and summary.
+- ui support for promoting and rolling back builds.
+- feature flag to use static secret when signing webhooks, from @chiraggadasc.
+
+### Fixed
+- ui branch list improperly capped.
+
+### Changed
+- upgrade drone/envsubst dependency
+- upgrade drone/go-scm dependency
+
+## [1.8.1] - 2020-06-23
+### Fixed
+- support for gitea api pagination, repository sync hanging.
+
+## [1.8.0] - 2020-06-10
+### Added
+- re-assigned repository ownership when deactivating a user.
+- re-assigned repository ownership when deleting a user.
+- de-activate a repository when deleting a user if re-assignment fails.
+- de-activate a repository when deactivating a user if re-assignment fails.
+- routine to cleanup builds stuck in a pending state.
+- routine to cleanup builds stuck in a running state.
+- private mode setting requires authentication to view public repositories.
+
+### Fixed
+- canceling a build emits a sql.ErrNoRows error.
+- custom token is ignored when creating a user account via the API.
+- machine accounts with sufficient permissions can create builds via the API.
+
+### Changed
+- upgraded Go toolchain to version 1.14.4.
+
+## [1.7.0] - 2020-03-27
+### Added
+- endpoint to display the latest build by branch. [#2940](https://github.com/drone/drone/pull/2940).
+- endpoint to display the latest build by pull request. [#2940](https://github.com/drone/drone/pull/2940).
+- endpoint to display the latest build by environment. [#2940](https://github.com/drone/drone/pull/2940).
+- endpoint to delete a branch from the index. [#2940](https://github.com/drone/drone/pull/2940).
+- endpoint to delete a pull request from the index. [#2940](https://github.com/drone/drone/pull/2940).
+- endpoint to delete an environment from the index. [#2940](https://github.com/drone/drone/pull/2940).
+- page to view the latest build per branch.
+
+### Fixed
+- sync routine not executing asynchronously, being cancelled by http context.
+- sync routine should ignore gitlab subrepositories
+- convert deploy events in 0.8 yaml to promote events.
+- do not execute cron job for disabled repositories. [#2931](https://github.com/drone/drone/issues/2931).
+- remove trailing slash from gitea url to prevent oauth2 token refresh errors, by [@cmj0121](https://github.com/cmj0121). [#2920](https://github.com/drone/drone/issues/2920). 
+- disable font ligatures in build log output. [drone/drone-ui#322](https://github.com/drone/drone-ui/pull/322).
+- missing am/pm in timestamps
+
+## [1.6.5] - 2020-01-29
+### Changed
+- update version of go-scm
+- update alpine version in docker images
+- use ticker for cron jobs for more accurate timing
+
+## [1.6.4] - 2019-12-30
+### Added
+- optionally enable pprof endpoints for profiling, by [@bradrydzewski](https://github.com/bradrydzewski).
+
 ## [1.6.3] - 2019-12-10
 ### Fixed
 - disable caching generated yaml files by commit sha, by [@bradrydzewski](https://github.com/bradrydzewski).

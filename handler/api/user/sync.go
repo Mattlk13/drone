@@ -30,11 +30,11 @@ func HandleSync(syncer core.Syncer, repos core.RepositoryStore) http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		viewer, _ := request.UserFrom(r.Context())
 
-		// performs asyncrhonous account synchronization.
+		// performs asynchronous account synchronization.
 		// this requires long polling to determine when the
 		// sync is complete.
-		if r.Header.Get("async") == "true" {
-			ctx := r.Context()
+		if r.FormValue("async") == "true" {
+			ctx := context.Background()
 			go func(ctx context.Context, viewer *core.User) {
 				_, err := syncer.Sync(ctx, viewer)
 				if err != nil {
@@ -57,7 +57,7 @@ func HandleSync(syncer core.Syncer, repos core.RepositoryStore) http.HandlerFunc
 		if err != nil {
 			render.InternalError(w, err)
 			logger.FromRequest(r).WithError(err).
-				Warnln("api: cannot synchrnoize account")
+				Warnln("api: cannot synchronize account")
 		} else {
 			render.JSON(w, list, 200)
 		}

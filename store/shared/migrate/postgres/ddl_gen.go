@@ -33,6 +33,10 @@ var migrations = []struct {
 		stmt: alterTableReposAddColumnCancelPush,
 	},
 	{
+		name: "alter-table-repos-add-column-throttle",
+		stmt: alterTableReposAddColumnThrottle,
+	},
+	{
 		name: "create-table-perms",
 		stmt: createTablePerms,
 	},
@@ -69,6 +73,10 @@ var migrations = []struct {
 		stmt: createIndexBuildsRef,
 	},
 	{
+		name: "alter-table-builds-add-column-debug",
+		stmt: alterTableBuildsAddColumnDebug,
+	},
+	{
 		name: "create-table-stages",
 		stmt: createTableStages,
 	},
@@ -79,6 +87,10 @@ var migrations = []struct {
 	{
 		name: "create-index-stages-status",
 		stmt: createIndexStagesStatus,
+	},
+	{
+		name: "alter-table-stages-add-column-limit-repos",
+		stmt: alterTableStagesAddColumnLimitRepos,
 	},
 	{
 		name: "create-table-steps",
@@ -131,6 +143,30 @@ var migrations = []struct {
 	{
 		name: "alter-table-builds-add-column-deploy-id",
 		stmt: alterTableBuildsAddColumnDeployId,
+	},
+	{
+		name: "create-table-latest",
+		stmt: createTableLatest,
+	},
+	{
+		name: "create-index-latest-repo",
+		stmt: createIndexLatestRepo,
+	},
+	{
+		name: "create-table-template",
+		stmt: createTableTemplate,
+	},
+	{
+		name: "alter-table-steps-add-column-step-depends-on",
+		stmt: alterTableStepsAddColumnStepDependsOn,
+	},
+	{
+		name: "alter-table-steps-add-column-step-image",
+		stmt: alterTableStepsAddColumnStepImage,
+	},
+	{
+		name: "alter-table-steps-add-column-step-detached",
+		stmt: alterTableStepsAddColumnStepDetached,
 	},
 }
 
@@ -225,8 +261,8 @@ CREATE TABLE IF NOT EXISTS users (
 ,user_created       INTEGER
 ,user_updated       INTEGER
 ,user_last_login    INTEGER
-,user_oauth_token   VARCHAR(500)
-,user_oauth_refresh VARCHAR(500)
+,user_oauth_token   BYTEA
+,user_oauth_refresh BYTEA
 ,user_oauth_expiry  INTEGER
 ,user_hash          VARCHAR(500)
 ,UNIQUE(user_login)
@@ -284,6 +320,10 @@ ALTER TABLE repos ADD COLUMN repo_cancel_pulls BOOLEAN NOT NULL DEFAULT false;
 
 var alterTableReposAddColumnCancelPush = `
 ALTER TABLE repos ADD COLUMN repo_cancel_push BOOLEAN NOT NULL DEFAULT false;
+`
+
+var alterTableReposAddColumnThrottle = `
+ALTER TABLE repos ADD COLUMN repo_throttle INTEGER NOT NULL DEFAULT 0;
 `
 
 //
@@ -375,6 +415,10 @@ var createIndexBuildsRef = `
 CREATE INDEX IF NOT EXISTS ix_build_ref ON builds (build_repo_id, build_ref);
 `
 
+var alterTableBuildsAddColumnDebug = `
+ALTER TABLE builds ADD COLUMN build_debug BOOLEAN NOT NULL DEFAULT false;
+`
+
 //
 // 005_create_table_stages.sql
 //
@@ -418,6 +462,10 @@ CREATE INDEX IF NOT EXISTS ix_stages_build ON stages (stage_build_id);
 var createIndexStagesStatus = `
 CREATE INDEX IF NOT EXISTS ix_stage_in_progress ON stages (stage_status)
 WHERE stage_status IN ('pending', 'running');
+`
+
+var alterTableStagesAddColumnLimitRepos = `
+ALTER TABLE stages ADD COLUMN stage_limit_repo INTEGER NOT NULL DEFAULT 0;
 `
 
 //
@@ -582,4 +630,59 @@ CREATE TABLE IF NOT EXISTS orgsecrets (
 
 var alterTableBuildsAddColumnDeployId = `
 ALTER TABLE builds ADD COLUMN build_deploy_id INTEGER NOT NULL DEFAULT 0;
+`
+
+//
+// 015_create_table_refs.sql
+//
+
+var createTableLatest = `
+CREATE TABLE IF NOT EXISTS latest (
+ latest_repo_id  INTEGER
+,latest_build_id INTEGER
+,latest_type     VARCHAR(50)
+,latest_name     VARCHAR(500)
+,latest_created  INTEGER
+,latest_updated  INTEGER
+,latest_deleted  INTEGER
+,PRIMARY KEY(latest_repo_id, latest_type, latest_name)
+);
+`
+
+var createIndexLatestRepo = `
+CREATE INDEX IF NOT EXISTS ix_latest_repo ON latest (latest_repo_id);
+`
+
+//
+// 016_create_template_tables.sql
+//
+
+var createTableTemplate = `
+CREATE TABLE IF NOT EXISTS templates (
+    template_id       SERIAL PRIMARY KEY
+    ,template_name    TEXT UNIQUE
+    ,template_namespace VARCHAR(50)
+    ,template_data    BYTEA
+    ,template_created INTEGER
+    ,template_updated INTEGER
+,UNIQUE(template_name, template_namespace)
+);
+
+CREATE INDEX IF NOT EXISTS ix_template_namespace ON templates (template_namespace);
+`
+
+//
+// 017_add_columns_steps.sql
+//
+
+var alterTableStepsAddColumnStepDependsOn = `
+ALTER TABLE steps ADD COLUMN step_depends_on TEXT NOT NULL DEFAULT '';
+`
+
+var alterTableStepsAddColumnStepImage = `
+ALTER TABLE steps ADD COLUMN step_image VARCHAR(1000) NOT NULL DEFAULT '';
+`
+
+var alterTableStepsAddColumnStepDetached = `
+ALTER TABLE steps ADD COLUMN step_detached BOOLEAN NOT NULL DEFAULT FALSE;
 `
